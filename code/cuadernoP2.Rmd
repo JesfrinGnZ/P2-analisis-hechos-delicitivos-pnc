@@ -1,0 +1,35 @@
+---
+title: "Análisis de hechos delictivos - énfasis PNC Parte 2"
+output: html_notebook
+---
+
+#Librerias
+
+
+```{r}
+if (!require(dplyr)) install.packages("dplyr")
+library(dplyr)
+
+
+
+```
+
+
+# Carga de información y limpieza de datos
+Los siguientes años seran descartados, ya que no se cuenta con una base de datos para su análisis
+
+- 2009
+- 2010
+- 2013
+- 2014
+- 2015
+
+También es importante comentar que la información que se necesita ya se ha verificado y limpiado en el proyecto anterior, por lo que se ha escrito en archivos csv, tanto para detenidos como para víctimas para así cargarlo de manera sencilla en esta parte 2 del proyecto.
+
+```{r}
+#carga de informacion
+detenidos_data  <- read.csv("../data/detenidos.csv", sep = ",")
+victimas_data  <- read.csv("../data/victimas.csv",  sep = ",")
+```
+
+
