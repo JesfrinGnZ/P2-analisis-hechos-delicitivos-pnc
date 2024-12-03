@@ -3,14 +3,23 @@ title: "Análisis de hechos delictivos - énfasis PNC Parte 2"
 output: html_notebook
 ---
 
-#Librerias
+# Librerias
 
 
 ```{r}
 if (!require(dplyr)) install.packages("dplyr")
 library(dplyr)
 
+#trees
+if (!require(rpart)) install.packages("rpart")
+library(rpart)
 
+if (!require(rpart.plot)) install.packages("rpart.plot")
+library(rpart.plot)
+
+#randomforest
+if (!require(randomForest)) install.packages("randomForest")
+library(randomForest)
 
 ```
 
@@ -32,4 +41,198 @@ detenidos_data  <- read.csv("../data/detenidos.csv", sep = ",")
 victimas_data  <- read.csv("../data/victimas.csv",  sep = ",")
 ```
 
+# 1. Predicción por medio de árboles de decisión
+```{r}
+#1 Apriori #ESTE SI
 
+
+detenidosf1 <- detenidos_data %>%
+  filter(año_ocu %in% c(2012,2016,2017,2019,2020) )
+
+
+arbol <- rpart(año_ocu ~
+               área_geo_ocu+
+               delito_com+
+               menor_mayor,
+               data = detenidosf1, method = "class");
+
+
+rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de año de detención", cex = 1)
+
+
+```
+
+
+```{r}
+
+#2 apriori #ESTE SI
+
+detenidos_f1 <- detenidos_data %>%
+  select(-g_edad_60ymás, -g_edad_80ymás, -edad_quinquenales)
+
+
+arbol <- rpart(g_hora ~
+               delito_com+
+               g_hora_mañ.tar.noch,
+               data = detenidos_f1, method = "class");
+
+
+rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de grupo de hora de ocurrencia", cex = 1)
+
+```
+
+```{r}
+#3 apriori
+arbol <- rpart(delito_com ~
+               sexo_per +
+               año_ocu,
+               data = detenidos_data, method = "class");
+
+
+rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de delito cometido", cex = 1)
+```
+
+#####Para victimas en apripri no se enctro nada
+
+```{r}
+#1 fpgrowth
+
+count_delitos <- detenidos_data_join %>%
+  group_by(delito_com) %>%   
+  summarise(count = n())  %>% 
+  select(delito_com, count) %>% 
+  arrange(count)
+
+detenidosFpg_f1 <- detenidos_data_join %>% 
+  filter(delito_com == 50) %>% 
+  select(-delito_com, -g_delitos)
+
+arbol <- rpart(hora_ocu ~
+               área_geo_ocu+
+               g_hora +
+               g_hora_mañ.tar.noch+ 
+               zona_ocu,
+               data = detenidosFpg_f1, method = "class");
+
+
+rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de año de ocurrencia", cex = 1)
+```
+
+```{r}
+#4 fpgrowth victimas
+
+victimasFpg_f2 <- victimas_data %>% 
+  filter(edad_per < 18) %>% 
+  select(-menor_mayor)
+
+
+arbol <- rpart(edad_per ~
+               sexo_per+
+              delito_com+  
+                zona_ocu  +
+                g_edad_80ymás
+              + edad_quinquenales,
+               data = victimasFpg_f2, method = "class")
+
+
+rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de edad de victima", cex = 1)
+
+```
+
+```{r}
+#ESTE SI
+victimasFpg_f2 <- victimas_data %>% 
+  filter(edad_per %in% c(15,16,17)) %>% 
+  select(-menor_mayor)
+
+arbol <- rpart(edad_per ~
+               delito_com,
+               data = victimasFpg_f2, method = "class")
+
+
+rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de edad de victima cuando es menor de edad", cex = 1)
+```
+
+```{r}
+#ESTE SI
+
+#Propio (sexo de la victima)
+arbol <- rpart(sexo_per ~
+               delito_com +
+               menor_mayor,
+               data = victimas_data, method = "class");
+
+
+rpart.plot(arbol, type=2, extra=104, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de sexo de la víctima", cex = 1)
+```
+
+
+# 2. Predicción por medio de bosques aleatorios
+
+```{r}
+#Regla apriori 1
+detenidosf1_rf <- detenidos_data %>%
+  filter(año_ocu %in% c(2012,2016,2017,2019,2020) )
+
+detenidosf1_rf $año_ocu <- as.factor(detenidosf1_rf$año_ocu)
+
+set.seed(100)
+
+detenidosf1_rf <- detenidosf1_rf[sample(1:nrow(detenidosf1_rf)),]
+
+#entreno de 80% y restante para predicciones
+index <- sample(1:nrow(detenidosf1_rf), 0.8*nrow(detenidosf1_rf)) 
+train_rf1 <- detenidosf1_rf[index,]
+train_rf1 <- na.omit(train_rf1)
+
+
+test_rf1 <- detenidosf1_rf[-index,]
+test_rf1 <- na.omit(test_rf1)
+
+#entrenando
+forest <- randomForest(año_ocu ~
+               área_geo_ocu+
+               delito_com+
+               menor_mayor,
+               data = train_rf1, ntree = 100, mtry = 3)
+
+#probando data test
+training <- predict(forest, test_rf1)
+
+
+#probando una nueva prediccion
+new_data <- data.frame(
+              área_geo_ocu=1, 
+               delito_com=1,
+               menor_mayor=2
+)
+
+
+prediction <-predict(forest, new_data)
+
+
+#Revisando precision
+matriz <- table(test_rf1$año_ocu, training)
+pre <- sum(diag(matriz)) / sum(matriz)
+
+
+#Grafincado Arboles
+plot(forest)
+```
+
+
+
+
+# 3. Predicción por medio de redes neuronales
+```{r}
+
+```
+
+# 4. Propuestas
