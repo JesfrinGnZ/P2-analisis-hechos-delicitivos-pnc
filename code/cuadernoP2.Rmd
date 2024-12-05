@@ -177,11 +177,11 @@ rpart.plot(arbol, type=2, extra=104, under = TRUE, fallen.leaves = TRUE, box.pal
 # 2. Predicción por medio de bosques aleatorios
 
 ```{r}
-#Regla apriori 1
+#Regla apriori 1, anio de detencion
 detenidosf1_rf <- detenidos_data %>%
   filter(año_ocu %in% c(2012,2016,2017,2019,2020) )
 
-detenidosf1_rf $año_ocu <- as.factor(detenidosf1_rf$año_ocu)
+detenidosf1_rf$año_ocu <- as.factor(detenidosf1_rf$año_ocu)
 
 set.seed(100)
 
@@ -230,9 +230,51 @@ plot(forest)
 
 
 
-# 3. Predicción por medio de redes neuronales
 ```{r}
+#select data, sexo de victimas
+victimas_rf2 <- victimas_data;
 
+victimas_rf2$sexo_per <- as.factor(victimas_rf2$sexo_per)
+
+set.seed(100)
+
+victimas_rf2 <- victimas_rf2[sample(1:nrow(victimas_rf2)),]
+
+#entreno de 80% y restante para predicciones
+index <- sample(1:nrow(victimas_rf2), 0.8*nrow(victimas_rf2)) 
+train_rf2 <- victimas_rf2[index,]
+train_rf2 <- na.omit(train_rf2)
+
+
+test_rf2 <- victimas_rf2[-index,]
+test_rf2 <- na.omit(test_rf2)
+
+
+#entrenando
+forest2 <- randomForest(sexo_per ~
+               delito_com +
+               menor_mayor,
+               data = train_rf2, ntree = 100, mtry = 2)
+
+#probando data test
+training2 <- predict(forest2, test_rf2)
+
+#probando una nueva prediccion
+new_data2 <- data.frame(
+              delito_com=1, 
+               menor_mayor=1
+)
+
+
+prediction_v1 <-predict(forest2, new_data2)
+
+#Revisando precision
+matriz2 <- table(test_rf2$sexo_per, training2)
+pre2 <- sum(diag(matriz2)) / sum(matriz2)
+
+
+#Grafincado Arboles
+plot(forest2)
 ```
 
 # 4. Propuestas
