@@ -53,14 +53,14 @@ detenidosf1 <- detenidos_data %>%
   filter(año_ocu %in% c(2016,2017,2019,2020) )
 
 
-arbol <- rpart(año_ocu ~
+arbol1 <- rpart(año_ocu ~
                área_geo_ocu+
                delito_com+
                menor_mayor,
                data = detenidosf1, method = "class");
 
 
-rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+rpart.plot(arbol1, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
            main ="Predicción de año de detención", cex = 1)
 
 
@@ -68,7 +68,7 @@ rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palet
 
 ```{r}
 #Pruebas
-# La detención ocurrion en el área rural, el delito fue homicidio por arma de fuego y el detenido era mayor de edad.
+# La detención ocurrion en el área urbana, el delito fue homicidio por arma de fuego y el detenido era mayor de edad.
 anio_detencion1 <- data.frame(
   área_geo_ocu = c(1),
   delito_com = c(1),
@@ -76,11 +76,11 @@ anio_detencion1 <- data.frame(
 )
 
 #  predicción
-resultado <- predict(arbol, anio_detencion1, type = "class")
+resultado <- predict(arbol1, anio_detencion1, type = "class")
 print(resultado)
 
 
-# La detención ocurrion en el área urbana, el delito fue juegos ilícitos y el detenido era mayor de edad.
+# La detención ocurrion en el área rural, el delito fue juegos ilícitos y el detenido era mayor de edad.
 anio_detencion2 <- data.frame(
   área_geo_ocu = c(2),
   delito_com = c(67),
@@ -88,7 +88,7 @@ anio_detencion2 <- data.frame(
 )
 
 #  predicción
-resultado2 <- predict(arbol, anio_detencion2, type = "class")
+resultado2 <- predict(arbol1, anio_detencion2, type = "class")
 print(resultado2)
 
 # La detención ocurrion en un área desconocida, el delito fue agresión y el detenido era mayor de edad.
@@ -99,36 +99,36 @@ anio_detencion3 <- data.frame(
 )
 
 #  predicción
-resultado3 <- predict(arbol, anio_detencion3, type = "class")
+resultado3 <- predict(arbol1, anio_detencion3, type = "class")
 print(resultado3)
 
 
-# La detención ocurrion en un área desconocida, el delito fue agresión y el detenido era mayor de edad.
-anio_detencion3 <- data.frame(
+# La detención ocurrio en un área desconocida, el delito fue agresión y el detenido era mayor de edad.
+anio_detencion4 <- data.frame(
   área_geo_ocu = c(9),
   delito_com = c(12),
   menor_mayor = c(1)
 )
 
 #  predicción
-resultado3 <- predict(arbol, anio_detencion3, type = "class")
-print(resultado3)
+resultado4 <- predict(arbol1, anio_detencion4, type = "class")
+print(resultado4)
 
 ```
 
 
 ### 1.2 Predicción de grupo de hora de ocurrencia de delito
 
-El siguiente árbol de decisión toma como variables independendientes a delito_com(valores de 1 a 126) y con el fin de predecir el grupo de hora en que la víctima se vio afectada por un delito(
+El siguiente árbol de decisión toma como variables independendientes a delito_com(valores de 1 a 126)  con el fin de predecir el grupo de hora en que la víctima se vio afectada por un delito(
 1 = 00:00 a 05:59, 2 = 06:00 a 11:59, 3 = 12:00 a 17:59, 4 =18:00 a 23:59, 5 = Ignorada)
 ```{r}
 #2 apriori
-arbol <- rpart(g_hora ~
+arbol2 <- rpart(g_hora ~
                delito_com,
                data = detenidos_data, method = "class");
 
 
-rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+rpart.plot(arbol2, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
            main ="Predicción de grupo de hora de ocurrencia", cex = 1)
 
 ```
@@ -136,24 +136,24 @@ rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palet
 
 ```{r}
 #Pruebas
-# Dado que el delito fue homicidio por arma de fuego y ocurrió entre  00:00 a 11:59 
+# Dado que el delito fue homicidio por arma de fuego 
 grupo_h_ocu1 <- data.frame(
   delito_com = c(1)
 )
 
 #  predicción
-resultado_h1 <- predict(arbol, grupo_h_ocu1, type = "class")
+resultado_h1 <- predict(arbol2, grupo_h_ocu1, type = "class")
 print(resultado_h1)
 
 
 #Pruebas
-# Dado que el delito fue secuestro y ocurrió entre 18:00 a 23:59
-grupo_h_ocu1 <- data.frame(
+# Dado que el delito fue secuestro 
+grupo_h_ocu2 <- data.frame(
   delito_com = c(15)
 )
 
 #  predicción
-resultado_h2 <- predict(arbol, grupo_h_ocu1, type = "class")
+resultado_h2 <- predict(arbol2, grupo_h_ocu2, type = "class")
 print(resultado_h2)
 
 
@@ -164,17 +164,17 @@ print(resultado_h2)
 
 El siguiente árbol de decisión toma como variables independendientes a delito_com(valores de 1 a 68) con el fin de predecir la edad de la persona que fue víctima del delito (15,16 o 17).
 ```{r}
-#ESTE SI
+
 victimasFpg_f2 <- victimas_data %>% 
   filter(edad_per %in% c(15,16,17)) %>% 
   select(-menor_mayor)
 
-arbol <- rpart(edad_per ~
+arbol3 <- rpart(edad_per ~
                delito_com,
                data = victimasFpg_f2, method = "class")
 
 
-rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+rpart.plot(arbol3, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
            main ="Predicción de edad de victima cuando es menor de edad", cex = 1)
 ```
 
@@ -186,7 +186,7 @@ edad1 <- data.frame(
 )
 
 #  predicción
-resultado_edad1 <- predict(arbol, edad1, type = "class")
+resultado_edad1 <- predict(arbol3, edad1, type = "class")
 print(resultado_edad1)
 
 
@@ -197,8 +197,8 @@ edad2 <- data.frame(
 )
 
 #  predicción
-resultado_edad1 <- predict(arbol, edad2, type = "class")
-print(resultado_edad1)
+resultado_edad2 <- predict(arbol3, edad2, type = "class")
+print(resultado_edad2)
 
 
 #Pruebas
@@ -208,7 +208,7 @@ edad3 <- data.frame(
 )
 
 #  predicción
-resultado_edad3 <- predict(arbol, edad3, type = "class")
+resultado_edad3 <- predict(arbol3, edad3, type = "class")
 print(resultado_edad3)
 ```
 
@@ -217,13 +217,13 @@ print(resultado_edad3)
 El siguiente árbol de decisión toma como variables independendientes a delito_com(valores de 1 a 68) y menor_mayor(1 = mayor de edad, 2 = menor de edad, 9 = ignorado) con el fin de predecir si la persona víctima fue hombre(1) o mujer(2).
 ```{r}
 #Propio (sexo de la victima)
-arbol <- rpart(sexo_per ~
+arbol4 <- rpart(sexo_per ~
                delito_com +
                menor_mayor,
                data = victimas_data, method = "class");
 
 
-rpart.plot(arbol, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+rpart.plot(arbol4, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
            main ="Predicción de sexo de la víctima", cex = 1)
 ```
 
@@ -236,9 +236,8 @@ sexo1 <- data.frame(
 )
 
 #  predicción
-resultado_s1 <- predict(arbol, sexo1, type = "class")
+resultado_s1 <- predict(arbol4, sexo1, type = "class")
 print(resultado_s1)
-
 
 ```
 
@@ -271,34 +270,51 @@ test_rf1 <- detenidosf1_rf[-index,]
 test_rf1 <- na.omit(test_rf1)
 
 #entrenando
-forest <- randomForest(año_ocu ~
+forest1 <- randomForest(año_ocu ~
                área_geo_ocu+
                delito_com+
                menor_mayor,
                data = train_rf1, ntree = 100, mtry = 3)
 
 #probando data test
-training <- predict(forest, test_rf1)
-
-
-#probando una nueva prediccion
-new_data <- data.frame(
-              área_geo_ocu=1, 
-               delito_com=1,
-               menor_mayor=2
-)
-
-
-prediction <-predict(forest, new_data)
+training <- predict(forest1, test_rf1)
 
 
 #Revisando precision
 matriz <- table(test_rf1$año_ocu, training)
 pre <- sum(diag(matriz)) / sum(matriz)
 
+print(matriz)
 
 #Grafincado Arboles
-plot(forest)
+plot(forest1)
+```
+
+
+```{r}
+#Pruebas
+#Predecir año de detención basado en el área goográfica urbana, el delito homicidio por arma de fuego siendo menor de edad 
+new_dataf1_1 <- data.frame(
+              área_geo_ocu=1, 
+               delito_com=1,
+               menor_mayor=2
+)
+
+
+predictionf1_1 <-predict(forest1, new_dataf1_1)
+print(predictionf1_1)
+
+
+#Predecir año de detención basado en el área goográfica urbana, el delito extorsion siendo el dtenido mayor de edad 
+new_dataf1_2 <- data.frame(
+              área_geo_ocu=2, 
+               delito_com=40,
+               menor_mayor=1
+)
+
+
+predictionf1_2 <-predict(forest1, new_dataf1_2)
+print(predictionf1_2)
 ```
 
 
@@ -336,21 +352,35 @@ forest2 <- randomForest(sexo_per ~
 #probando data test
 training2 <- predict(forest2, test_rf2)
 
-#probando una nueva prediccion
-new_data2 <- data.frame(
-              delito_com=1, 
-               menor_mayor=1
-)
-
-
-prediction_v1 <-predict(forest2, new_data2)
-
 #Revisando precision
 matriz2 <- table(test_rf2$sexo_per, training2)
 pre2 <- sum(diag(matriz2)) / sum(matriz2)
 
-
+print(matriz2)
 #Grafincado Arboles
 plot(forest2)
+```
+```{r}
+
+#Predecir el sexo de la víctima dado que el delito cometido es homicidio por arma de fuego, siendo la víctima mayor de edad
+new_dataf2_1 <- data.frame(
+              delito_com=1, 
+              menor_mayor=1
+)
+
+
+predictionf2_1 <-predict(forest2, new_dataf2_1)
+print(predictionf2_1)
+
+
+#Predecir el sexo de la víctima dado que el delito cometido es hurto a peatones , siendo la víctima menor de edad
+new_dataf2_2 <- data.frame(
+              delito_com=80, 
+              menor_mayor=2
+)
+
+
+predictionf2_2 <-predict(forest2, new_dataf2_2)
+print(predictionf2_2)
 ```
 
